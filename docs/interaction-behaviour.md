@@ -33,7 +33,7 @@ The selected font applies to Home app names, the clock and Home controls, includ
 
 ## Streaming apps
 
-The nine default apps keep their known native IDs. Other installed consumer apps can also be added to Home. Launching uses the public `tizen.application.launch` API with the app's native ID. Missing apps and denied launches produce a real error. No web player, placeholder success page or account credential is embedded.
+The nine built-in apps keep their known native IDs. A fresh install puts Netflix, YouTube, Spotify, Disney+ and Apple TV on Home, in that order, with a Photo background, Dock layout, Glass focus, the default Manrope font and labelled apps and controls. Spotify is seeded under its installed ID (`rJeHak5zRg.Spotify`). A saved Home list is never replaced by this default. Other installed consumer apps can also be added to Home. Launching uses the public `tizen.application.launch` API with the app's native ID. Missing apps and denied launches produce a real error. No web player, placeholder success page or account credential is embedded.
 
 ## All apps
 

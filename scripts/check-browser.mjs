@@ -215,6 +215,27 @@ try {
     await current.reload(); await ready();
     check('Migrated preferences survive reload', (await state()).look.controls === 'text' && (await state()).dock[0] === 'netflix');
   });
+  await run('Fresh install defaults', async () => {
+    const DEFAULT_HOME = ['netflix', 'youtube', SPOTIFY, 'disneyplus', 'appletv'];
+    await page({ seed: undefined });
+    let s = await state();
+    check('Fresh Home holds the five chosen apps in order', same(s.dock, DEFAULT_HOME) && s.lastApp === 'netflix', s.dock);
+    check('Fresh look is Photo Dock with Glass focus, default font and labelled apps and controls',
+      s.look.bg === 'photo' && s.look.layout === 'dock' && s.look.focus === 'glass' && s.look.font === 'manrope' && s.look.apps === 'both' && s.look.controls === 'both', s.look);
+    const labels = await current.evaluate(() => [...document.querySelectorAll('#home .u-label')].filter(e => e.getClientRects().length).map(e => e.textContent.trim()));
+    check('Home controls show their labels', ['Art Mode', 'All apps', 'Settings'].every(l => labels.includes(l)), labels);
+    await act('home.app.' + SPOTIFY); await current.waitForFunction(() => __tv.calls.length > 0);
+    check('Spotify launches its native ID', (await current.evaluate(() => __tv.calls.at(-1))).id === SPOTIFY);
+    await look({ controls: 'text' });
+    const saved = await stored();
+    check('First saved edit keeps the five apps and records Spotify', same(saved.dock, DEFAULT_HOME) && saved.appRecords.some(r => r.id === SPOTIFY && r.appId === SPOTIFY && r.brand === 'spotify'), saved);
+    await current.reload(); await ready();
+    s = await state();
+    check('Chosen Home survives reload with Spotify intact', same(s.dock, DEFAULT_HOME) && s.look.controls === 'text', s);
+    await closePage();
+    await page({ seed: baseline({ dock: ['stremio', 'sbs'], lastApp: 'sbs' }) });
+    check('A saved Home is never replaced by the new default', same((await state()).dock, ['stremio', 'sbs']));
+  });
   await run('Invalid preferences and saved native pins', async () => {
     await page({ seed: '{broken', legacy: baseline({ dock: ['netflix'], lastApp: 'netflix' }) });
     check('Malformed primary recovers valid legacy key', same((await state()).dock, ['netflix']));

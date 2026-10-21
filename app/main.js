@@ -368,6 +368,12 @@
     if (saved && initial.mode === 'open') initial.wall = WALLS[(wallIndex(initial.wall) + 1) % WALLS.length].id;
     // Keep the old schema keys alongside the builder values for in-place updates.
     try { localStorage.setItem(KEY, JSON.stringify(serialise(initial))); S.c = initial; storageOk = true; } catch (e) { storageOk = false; }
+    if (S.c.bg === 'photo' && wall(S.c.wall)) {
+      IMG.photo.src = WP + S.c.wall + '.jpg';
+      IMG.bg.src = WP + S.c.wall + '-panel.jpg';
+      IMG.mat.src = matSrc(S.c.wall, S.c.material);
+      IMG.field.src = IMG.fieldAlt.src = IMG.utility.src = IMG.utilityAlt.src = fieldSrc(S.c.wall, S.c.material);
+    }
   }
   function clearSession() { S.undo = []; S.removedAt = {}; S.note = null; S.err = null; }
   function begin() { S.note = null; }
@@ -868,6 +874,7 @@
     if (t.group === 'rotation') return [{ id: 'mode', title: '', items: options('mode', MODES.map(function (m) { return m.id; }), flat),
       reason: flat ? 'Choose Photo in Background to use rotation.' : 'Timed changes pause while Settings or another panel is open.' }];
     return [{ id: 'samsung', title: '', items: [
+      { action: 'samsung.sources', label: 'Inputs & sources', description: 'Switch to HDMI, game consoles or Live TV' },
       { action: 'samsung.home', label: 'Samsung Home', description: 'Open Samsung’s Home screen' },
       { action: 'samsung.settings', label: 'TV settings', description: 'Picture, sound and network settings' }
     ] }];
@@ -914,6 +921,7 @@
     else if (item.axis) { patch[item.axis] = item.value; setLook(patch, { row: item.axis }); }
     else if (item.action === 'background.wallpaper') openWallpaper();
     else if (item.action === 'background.rotation') openAppearance('rotation');
+    else if (item.action === 'samsung.sources') perform('Inputs & sources', FrameDevice.sources);
     else if (item.action === 'samsung.home') perform('Samsung Home', FrameDevice.home);
     else if (item.action === 'samsung.settings') perform('TV settings', FrameDevice.settings);
   }
@@ -1126,7 +1134,7 @@
       utPlates[utPlateIndex].className = 'ph-plate ut-lens is-outgoing';
       utPlateIndex = 1 - utPlateIndex; el = utPlates[utPlateIndex];
       el.className = 'ph-plate ut-lens is-preparing';
-      el.style.width = width + 'px'; el.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)';
+      el.style.width = width + 'px'; el.style.left = x + 'px'; el.style.top = y + 'px';
       fieldTransform(utFields[utPlateIndex], x, y, width, 60);
       el.offsetWidth;
       utPlateKey = key;
@@ -1291,7 +1299,7 @@
       plateEl = phPlates[photoPlateIndex]; fieldEl = phFields[photoPlateIndex];
       plateEl.className = 'ph-plate is-preparing';
       plateEl.style.width = width + 'px'; plateEl.style.height = height + 'px';
-      plateEl.style.transform = 'translate3d(0,' + y + 'px,0)';
+      plateEl.style.left = '112px'; plateEl.style.top = y + 'px';
       fieldTransform(fieldEl, 112, y, width, height);
       plateEl.offsetWidth; // Establish zero opacity before the incoming crossfade.
       photoPlateKey = key;
@@ -1301,8 +1309,9 @@
   }
   function fieldTransform(el, x, y, width, height) {
     el._placement = { x: x, y: y, width: width, height: height };
+    el.style.left = (-x) + 'px'; el.style.top = (-y) + 'px';
     el.style.transformOrigin = (x + width / 2) + 'px ' + (y + height / 2) + 'px';
-    el.style.transform = 'translate3d(' + (-x) + 'px,' + (-y) + 'px,0)' + (S.c.bg === 'photo' && S.c.material === 'tint' && !REDUCED_MOTION ? ' scale(1.04)' : '');
+    el.style.transform = S.c.bg === 'photo' && S.c.material === 'tint' && !REDUCED_MOTION ? 'scale(1.04)' : 'none';
   }
   function renderList(hs) {
     var items = hs.items, n = items.length, compact = hs.mode === 'arrange', pitch = compact ? PH_COMPACT_PITCH : PH_PITCH;
@@ -1622,9 +1631,13 @@
   function fieldSrc(id, material) { return 'assets/materials/' + id + (material === 'soft' ? '-field-blur.jpg' : material === 'tint' ? '-field-clear.jpg' : '-field-frost.jpg'); }
   function makeImg(cls, src) { var im = document.createElement('img'); im.className = cls; im.alt = ''; im._src = src; im.src = src; return im; }
   function whenReady(im, done) {
-    var fin = false, timer = setTimeout(function () { finish(false); }, 8000);
+    var fin = false, timer = setTimeout(function () { finish(!!(im.complete && im.naturalWidth)); }, 20000);
     function finish(ok) { if (fin) return; fin = true; clearTimeout(timer); done(ok); }
-    function ready() { if (im.decode) im.decode().then(function () { finish(true); }, function () { finish(false); }); else finish(true); }
+    function ready() {
+      if (document.hidden || !im.decode) { finish(true); return; }
+      var decTimer = setTimeout(function () { finish(true); }, 1500);
+      im.decode().then(function () { clearTimeout(decTimer); finish(true); }, function () { clearTimeout(decTimer); finish(!!(im.complete && im.naturalWidth)); });
+    }
     if (im.complete) { if (im.naturalWidth) ready(); else finish(false); }
     else { im.onload = ready; im.onerror = function () { finish(false); }; }
   }
@@ -1702,7 +1715,11 @@
     }
     function complete() {
       if (!imageDone || !fontDone || failed || token !== wallToken) return;
-      window.requestAnimationFrame(function () { if (!failed && token === wallToken) finish(loadedBundle); });
+      var done = false;
+      function runFinish() { if (done || failed || token !== wallToken) return; done = true; finish(loadedBundle); }
+      if (document.hidden) { runFinish(); return; }
+      setTimeout(runFinish, 50);
+      window.requestAnimationFrame(runFinish);
     }
     needs = target.bg === 'photo' && S.bundleKey !== bundleKey(target) && (!S.shown || S.shown.bg !== 'photo' || target.wall !== S.c.wall || materialApplies(target));
     needsFont = !fontMetrics[target.font]; imageDone = !needs; fontDone = !needsFont;
@@ -1840,7 +1857,11 @@
   document.addEventListener('visibilitychange', function () {
     heldKeys = {};
     if (document.hidden) { pauseRotation(); clearTimeout(clockTimer); }
-    else { release(); after(); updateClock(); focusStage(); }
+    else {
+      release();
+      if (S.c.bg === 'photo' && (!committedBundle || S.bundleKey !== bundleKey(S.c)) && !S.pending) setLook({}, { transient: true, startup: true });
+      after(); updateClock(); focusStage();
+    }
   });
   window.addEventListener('resize', fit);
 

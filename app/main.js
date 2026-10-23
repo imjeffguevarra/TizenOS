@@ -11,18 +11,19 @@
   var PH_TOP = 220, PH_PITCH = 128, PH_FULL = 5, PH_HEIGHT = 944, PH_COMPACT_TOP = 144, PH_COMPACT_PITCH = 88, PH_COMPACT_VISIBLE = 9;
   var WALL_VISIBLE = 6, WALL_ROW = 92, WALL_DELAY = 200;
   var KEYS = { 37: 'left', 38: 'up', 39: 'right', 40: 'down', 13: 'ok', 27: 'back', 8: 'back', 10009: 'back', 461: 'back' };
-  var FULL = 'Home holds nine apps. Remove one first.', LAST = 'Home needs one app';
+  var FULL = 'Màn hình chính chỉ chứa tối đa 9 ứng dụng.', LAST = 'Màn hình chính cần ít nhất một ứng dụng';
 
   var PRIMARY_APPS = [
-    { id: 'stremio', name: 'Stremio', mark: true, appId: 'IkWsFHtOY9.Stremio' },
-    { id: 'netflix', name: 'Netflix', mark: true, appId: 'org.tizen.netflix-app' },
-    { id: 'disneyplus', name: 'Disney+', mark: true, appId: 'MCmYXNxgcu.DisneyPlus' },
     { id: 'youtube', name: 'YouTube', mark: true, appId: '9Ur5IzDKqV.TizenYouTube' },
-    { id: 'appletv', name: 'Apple TV', mark: true, appId: 'com.samsung.tv.aria-video' },
-    { id: 'primevideo', name: 'Prime Video', mark: true, appId: 'org.tizen.primevideo' },
-    { id: 'abciview', name: 'ABC iview', mark: true, appId: 'mWK87Xghap.ABCiview' },
-    { id: 'sbs', name: 'SBS On Demand', mark: true, appId: 'OyE7OuxlUi.SBSOnDemand' },
-    { id: 'applemusic', name: 'Apple Music', mark: true, appId: 'org.tizen.apple.apple-music' }
+    { id: 'moonlight', name: 'Moonlight', mark: true, appId: 'MoonLightS.MoonlightWasm' },
+    { id: 'hdmi', name: 'HDMI', brand: 'hdmi', mark: true, appId: 'hdmi:menu' },
+    { id: 'tizenbrew', name: 'TizenBrew', mark: true, appId: 'xvvl3S1bvH.TizenBrewStandalone' },
+    { id: 'vieon', name: 'VieON', brand: 'vieon', mark: true, appId: '7wiJRozgP7.VieOn' },
+    { id: 'netflix', name: 'Netflix', mark: true, appId: 'org.tizen.netflix-app' },
+    { id: 'nuvio_legacy', name: 'Nuvio Native', brand: 'nuvio_legacy', mark: true, appId: 'NuvioTV002.Nuvio' },
+    { id: 'nuviotv', name: 'Nuvio Web', brand: 'nuviotv', mark: true, appId: 'NuvioTV001.NuvioTV' },
+    { id: 'spotify', name: 'Spotify', mark: true, appId: 'rJeHak5zRg.Spotify' },
+    { id: 'stremio', name: 'Stremio', mark: true, appId: 'IkWsFHtOY9.Stremio' }
   ];
   var PRIMARY = PRIMARY_APPS.map(function (a) { return a.id; }), APPS = PRIMARY_APPS.slice(), ALPHA = [];
   /* A fresh install starts with these five apps, in this order. Spotify is not one of the nine
@@ -52,13 +53,20 @@
   var PRIVATE_FONTS = window.CleanFramePrivateFontIDs || [], fontMetrics = {}, unavailableFonts = {}, widthCache = {}, fontsReady = false;
   var LOOK_KEYS = ['bg', 'layout', 'apps', 'font', 'controls', 'focus', 'material'];
   var LOOK_VALUES = { bg: ['dark', 'light', 'photo'], layout: ['list', 'dock'], apps: ['icons', 'both', 'text'], font: Object.keys(FONTS).filter(function (id) { return id === 'manrope' || PRIVATE_FONTS.indexOf(id) >= 0; }), controls: ['icons', 'both', 'text'], focus: ['type', 'glass'], material: ['soft', 'frost', 'tint'] };
-  var LOOK_NAMES = { bg: 'Background', layout: 'Layout', apps: 'Apps', font: 'Font', controls: 'Home controls', focus: 'Focus', material: 'Material' };
-  var VALUE_NAMES = { dark: 'Dark', light: 'Light', photo: 'Photo', list: 'List', dock: 'Dock', type: 'Type', glass: 'Glass', soft: 'Soft', frost: 'Frost', tint: 'Clear tint', icons: 'Icons', both: 'Icons and text', text: 'Text' };
-  var UTIL = { art: ['Art Mode', 'art'], apps: ['All apps', 'apps'], arrange: ['Arrange', 'arrange'], settings: ['Settings', 'settings'] };
+  var LOOK_NAMES = { bg: 'Hình nền', layout: 'Bố cục', apps: 'Kiểu ứng dụng', font: 'Phông chữ', controls: 'Nút điều khiển', focus: 'Hiệu ứng chọn', material: 'Chất liệu kính mờ' };
+  var VALUE_NAMES = { dark: 'Tối', light: 'Sáng', photo: 'Ảnh nghệ thuật', list: 'Danh sách dọc', dock: 'Thanh ngang (Dock)', type: 'Chữ', glass: 'Kính mờ', soft: 'Dịu nhẹ', frost: 'Băng mờ', tint: 'Trong suốt', icons: 'Biểu tượng', both: 'Biểu tượng và tên', text: 'Chỉ tên chữ' };
+  var UTIL = {
+    source: ['Nguồn (HDMI)', 'source'],
+    art: ['Khung tranh', 'art'],
+    apps: ['Tất cả ứng dụng', 'apps'],
+    arrange: ['Sắp xếp', 'arrange'],
+    settings: ['Cài đặt', 'settings']
+  };
   var MSG = {
-    leave: { title: 'Leave Home?', line: 'Open Samsung Home?', note: '', actions: [['stay', 'Stay'], ['samsung', 'Samsung Home']] }
+    leave: { title: 'Rời giao diện CleanFrame?', line: 'Bạn có muốn mở màn hình gốc của Samsung TV không?', note: '', actions: [['stay', 'Ở lại'], ['samsung', 'Mở Samsung Hub']] }
   };
   var SVG = {
+    source: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M7 20h10M12 16v4M8 10l4 4 4-4"/>',
     art: '<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="9.8" r="1.5"/><path d="m4.5 17.5 4.5-4.5 3 3 2.5-2.5 5 5"/>',
     apps: '<rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/>',
     arrange: '<path d="M4 8.5h14M15 5.5l3 3-3 3M20 15.5H6M9 12.5l-3 3 3 3"/>',
@@ -335,13 +343,22 @@
   function clean(saved) {
     var s = saved && typeof saved === 'object' ? saved : {}, modern = s.look && typeof s.look === 'object' ? s.look : s;
     var legacyList = s.theme === 'list', h = [], recent = [], records = Array.isArray(s.appRecords) ? s.appRecords : [];
+    var devBrands = (window.FrameDevice && window.FrameDevice.brands) || {};
+    var devTitles = (window.FrameDevice && window.FrameDevice.titles) || {};
     records.slice(0, 256).forEach(function (a) {
       if (!a || !safeId(a.id) || !safeId(a.appId) || typeof a.name !== 'string' || !a.name.trim() || app(a.id)) return;
-      APPS.push({ id: a.id, appId: a.appId, name: a.name.slice(0, 160), brand: ['hbomax', 'spotify', 'tubi'].indexOf(a.brand) >= 0 ? a.brand : '', mark: ['hbomax', 'spotify', 'tubi'].indexOf(a.brand) >= 0, icon: safeIcon(a.icon) });
+      var b = a.brand || devBrands[a.appId] || devBrands[a.id] || '';
+      var cleanName = devTitles[a.appId] || devTitles[a.id] || a.name;
+      APPS.push({ id: a.id, appId: a.appId, name: cleanName.slice(0, 160), brand: b, mark: !!b, icon: safeIcon(a.icon) });
     });
     (Array.isArray(s.home) ? s.home : Array.isArray(s.dock) ? s.dock : []).forEach(function (id) {
+      if (id === 'hdmi1' || id === 'hdmi2') id = 'hdmi';
       if (!safeId(id) || h.indexOf(id) >= 0 || h.length >= CAP) return;
-      if (!app(id) && id.indexOf('.') > 0) APPS.push({ id: id, appId: id, name: id.split('.').pop(), mark: false });
+      if (!app(id) && id.indexOf('.') > 0) {
+        var b = devBrands[id] || '';
+        var n = devTitles[id] || id.split('.').pop();
+        APPS.push({ id: id, appId: id, name: n, brand: b, mark: !!b });
+      }
       if (app(id)) h.push(id);
     });
     if (!h.length) h = DEFAULT_HOME.slice();
@@ -465,6 +482,10 @@
   function launch(id) {
     var a = app(id), c;
     if (!a || busy) return;
+    if (a.appId === 'hdmi:menu' || id === 'hdmi') {
+      openSourcePicker();
+      return;
+    }
     if (S.c.home.indexOf(id) >= 0) { c = next(S.c.home.slice(), S.c.recent.slice()); c.lastApp = id; write(c, 'Last app'); }
     S.press = id; S.lastLaunch = a.name;
     perform(a.name, function (done) { FrameDevice.launchApp(a.appId, done); });
@@ -497,14 +518,15 @@
   }
 
   /* ---------- Navigation targets ---------- */
-  function utils() { return ['art', 'apps', 'settings']; }
+  function utils() { return ['source', 'art', 'apps', 'settings']; }
   /* prev/next run along the apps; out goes to the controls, inn comes back (or to a per-app action). */
   function axes() {
     var v = S.c.layout === 'list';
     return { prev: v ? 'up' : 'left', next: v ? 'down' : 'right', out: v ? 'right' : 'up', inn: v ? 'left' : 'down' };
   }
   function utilAction(u) {
-    if (u === 'art') perform('Art Mode', FrameDevice.art);
+    if (u === 'source') openSourcePicker();
+    else if (u === 'art') perform('Khung tranh', FrameDevice.art);
     else if (u === 'apps') openApps();
     else openSettings();
   }
@@ -516,6 +538,46 @@
     push({ id: 'appearance', group: group, f: { action: action } });
   }
   function openMessage(key) { push({ id: 'message', msg: key, f: { b: 0 } }); }
+  function openSourcePicker() {
+    var defaultActions = [
+      ['hdmi:1', 'HDMI 1'],
+      ['hdmi:2', 'HDMI 2 (eARC)'],
+      ['hdmi:3', 'HDMI 3'],
+      ['hdmi:4', 'HDMI 4'],
+      ['cancel', 'Đóng']
+    ];
+    var e = {
+      id: 'message',
+      msg: 'source',
+      content: {
+        title: 'Nguồn phát (HDMI)',
+        line: 'Chọn cổng HDMI kết nối thiết bị của bạn:',
+        note: 'Dùng phím Trái / Phải để chọn cổng, nhấn OK để xem.',
+        actions: defaultActions
+      },
+      f: { b: 0 }
+    };
+    push(e);
+    if (FrameDevice && FrameDevice.sources) {
+      FrameDevice.sources(function (connected) {
+        if (!connected || !connected.length) return;
+        var hdmiNums = connected.filter(function (s) { return s.type === 'HDMI'; }).map(function (s) { return Number(s.number); });
+        if (hdmiNums.length && top() === e) {
+          e.content.actions = [
+            ['hdmi:1', 'HDMI 1' + (hdmiNums.indexOf(1) >= 0 ? ' ●' : '')],
+            ['hdmi:2', 'HDMI 2 (eARC)' + (hdmiNums.indexOf(2) >= 0 ? ' ●' : '')],
+            ['hdmi:3', 'HDMI 3' + (hdmiNums.indexOf(3) >= 0 ? ' ●' : '')],
+            ['hdmi:4', 'HDMI 4' + (hdmiNums.indexOf(4) >= 0 ? ' ●' : '')],
+            ['cancel', 'Đóng']
+          ];
+          for (var i = 0; i < 4; i++) {
+            if (hdmiNums.indexOf(i + 1) >= 0) { e.f.b = i; break; }
+          }
+          render();
+        }
+      });
+    }
+  }
   function openApps() {
     var e = { id: 'apps', mode: 'browse', top: 0, f: { zone: 'grid', i: Math.max(0, ALPHA.indexOf(S.appsFocus)), h: 0 } };
     push(e); refreshCatalog(); return e;
@@ -688,7 +750,7 @@
 
   /* ---------- Installed apps ---------- */
   function appsItems() { return catalog.error ? [] : ALPHA; }
-  function appsHead() { return catalog.error ? [['retry', 'Try again', '', '']] : [['editor', 'Apps on Home', '', 'home']]; }
+  function appsHead() { return catalog.error ? [['retry', 'Thử lại', '', '']] : [['editor', 'Quản lý Home', '', 'home']]; }
   V.apps = {
     sheet: true,
     norm: function (t) {
@@ -822,12 +884,12 @@
   function mode() { for (var i = 0; i < MODES.length; i++) if (MODES[i].id === S.c.mode) return MODES[i]; return MODES[0]; }
   function settingsRows() {
     var n = S.c.home.length;
-    return [{ id: 'background', label: 'Background', value: S.c.bg === 'photo' ? wall(S.c.wall).name : VALUE_NAMES[S.c.bg] },
-      { id: 'layout', label: 'Layout', value: VALUE_NAMES[S.c.layout] },
-      { id: 'typography', label: 'Typography', value: FONTS[S.c.font].name },
-      { id: 'focus', label: 'Focus', value: VALUE_NAMES[S.c.focus] + (materialApplies() ? ', ' + VALUE_NAMES[S.c.material] : '') },
-      { id: 'editor', label: 'Apps on Home', value: n + (n === 1 ? ' app' : ' apps') },
-      { id: 'samsung', label: 'Samsung', value: 'Home and TV settings' }];
+    return [{ id: 'background', label: 'Hình nền', value: S.c.bg === 'photo' ? wall(S.c.wall).name : VALUE_NAMES[S.c.bg] },
+      { id: 'layout', label: 'Bố cục', value: VALUE_NAMES[S.c.layout] },
+      { id: 'typography', label: 'Phông chữ', value: FONTS[S.c.font].name },
+      { id: 'focus', label: 'Hiệu ứng chọn', value: VALUE_NAMES[S.c.focus] + (materialApplies() ? ', ' + VALUE_NAMES[S.c.material] : '') },
+      { id: 'editor', label: 'Ứng dụng trên Home', value: n + ' ứng dụng' },
+      { id: 'samsung', label: 'Samsung', value: 'Màn hình chính và Cài đặt TV' }];
   }
   function settingsIds() { return settingsRows().map(function (r) { return r.id; }); }
   V.settings = {
@@ -847,7 +909,7 @@
     if (id === 'editor') openEditor('settings');
     else openAppearance(id);
   }
-  var DETAIL_NAMES = { background: 'Background', layout: 'Layout', typography: 'Typography', focus: 'Focus', rotation: 'Rotation', samsung: 'Samsung' };
+  var DETAIL_NAMES = { background: 'Hình nền', layout: 'Bố cục', typography: 'Phông chữ', focus: 'Hiệu ứng chọn', rotation: 'Tự đổi hình nền', samsung: 'Samsung' };
   function choice(axis, value, disabled) {
     return { action: axis === 'mode' ? 'rotation.' + value : 'choice.' + axis + '.' + value, axis: axis, value: value, disabled: !!disabled,
       label: axis === 'font' ? FONTS[value].name : axis === 'mode' ? MODES.filter(function (m) { return m.id === value; })[0].name : value === 'both' ? 'Both' : VALUE_NAMES[value] };
@@ -960,10 +1022,18 @@
     sheet: true,
     key: function (t, k) {
       var A = messageContent(t).actions, a;
-      if (k === 'left') t.f.b = Math.max(0, t.f.b - 1);
-      else if (k === 'right') t.f.b = Math.min(A.length - 1, t.f.b + 1);
+      if (k === 'left' || k === 'up') t.f.b = Math.max(0, t.f.b - 1);
+      else if (k === 'right' || k === 'down') t.f.b = Math.min(A.length - 1, t.f.b + 1);
       else if (k === 'back') pop();
-      else if (k === 'ok') { a = A[t.f.b][0]; pop(); if (a === 'samsung') perform('Samsung Home', FrameDevice.home); }
+      else if (k === 'ok') {
+        a = A[t.f.b][0];
+        pop();
+        if (a === 'samsung') perform('Samsung Home', FrameDevice.home);
+        else if (typeof a === 'string' && a.indexOf('hdmi:') === 0) {
+          var port = parseInt(a.replace('hdmi:', ''), 10) || 1;
+          perform('HDMI ' + port, function (done) { FrameDevice.hdmi(port, done); });
+        }
+      }
     },
     point: function (t, z, i) { if (z === 'act') { t.f.b = i; this.key(t, 'ok'); } }
   };
@@ -1061,9 +1131,18 @@
     renderAppFocusName(hs);
   }
 
+  var WEEKDAYS = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  function dateText() {
+    var d = new Date();
+    var w = WEEKDAYS[d.getDay()];
+    var day = (d.getDate() < 10 ? '0' : '') + d.getDate();
+    var month = (d.getMonth() + 1 < 10 ? '0' : '') + (d.getMonth() + 1);
+    var year = d.getFullYear();
+    return w + ', ngày ' + day + '/' + month + '/' + year;
+  }
   function clockText() {
-    var d = new Date(), h = d.getHours() % 12 || 12, m = d.getMinutes();
-    return h + ':' + (m < 10 ? '0' : '') + m;
+    var d = new Date(), h = d.getHours(), m = d.getMinutes();
+    return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
   }
   function clockHtml() {
     var text = clockText(), metrics = fontMetrics[homeFont()];
@@ -1071,7 +1150,7 @@
     return text.replace(/[0-9]/g, function (digit) { return '<span class="clock-digit">' + digit + '</span>'; });
   }
   function renderCaption(t, hs) {
-    var html = '<span class="clock">' + clockHtml() + '</span>';
+    var html = '<span class="clock">' + clockHtml() + '</span><span class="clock-date">' + dateText() + '</span>';
     if (S.c.apps !== 'icons' && hs.items[hs.i] && (S.c.layout === 'list' ? photoLabel(hs.items[hs.i].id, false).size < 88 || photoLabel(hs.items[hs.i].id, false).ellipsis : hs.zone === 'apps' && reducedDockLabel(hs.items[hs.i].id))) html += '<span class="cap-line full-name">' + esc(app(hs.items[hs.i].id).name) + '</span>';
     setHTML(caption, html);
   }
@@ -1511,26 +1590,26 @@
         + '<div class="row-cue grid-before" data-slot="before" aria-hidden="true">' + icon('up') + '</div><div class="row-cue grid-after" data-slot="after" aria-hidden="true">' + icon('down') + '</div>';
     },
     editor: function () {
-      return '<h2 class="s-title">Apps on Home</h2><p class="s-sub" data-slot="sub"></p><div class="s-head" data-slot="head"></div>'
-        + '<p class="s-label z-home" data-slot="lh"></p><p class="s-label z-other">Not on Home</p>'
-        + '<div class="ed-home" data-slot="home"></div><div class="ed-order-break" data-slot="break">Then scroll</div><div class="ed-other-view" data-slot="ov"><div class="ed-other" data-slot="other"></div></div><div class="ed-origin" data-slot="origin"></div>'
+      return '<h2 class="s-title">Ứng dụng trên Home</h2><p class="s-sub" data-slot="sub"></p><div class="s-head" data-slot="head"></div>'
+        + '<p class="s-label z-home" data-slot="lh"></p><p class="s-label z-other">Chưa thêm vào Home</p>'
+        + '<div class="ed-home" data-slot="home"></div><div class="ed-order-break" data-slot="break">Cuộn tiếp để xem thêm</div><div class="ed-other-view" data-slot="ov"><div class="ed-other" data-slot="other"></div></div><div class="ed-origin" data-slot="origin"></div>'
         + '<div class="row-cue editor-before" data-slot="otherBefore" aria-hidden="true">' + icon('up') + '</div><div class="row-cue editor-after" data-slot="otherAfter" aria-hidden="true">' + icon('down') + '</div>';
     },
-    settings: function () { return '<h2 class="s-title">Settings</h2><div class="settings-overview" data-slot="list"></div><p class="settings-overview-hint"><span class="remote-key">OK</span><span>Open selected group</span></p>'; },
+    settings: function () { return '<h2 class="s-title">Cài đặt</h2><div class="settings-overview" data-slot="list"></div><p class="settings-overview-hint"><span class="remote-key">OK</span><span>Mở mục đã chọn</span></p>'; },
     message: function (t) {
       var m = messageContent(t);
       return '<h2 class="msg-title">' + esc(m.title) + '</h2><p class="msg-line">' + esc(m.line) + '</p><p class="msg-note">' + esc(m.note) + '</p><div class="msg-acts" data-slot="acts"></div>';
     }
   };
   function gridTileHtml(id) {
-    var a = app(id), state = onHome(id) ? badge(true) + '<span>On Home</span>' : '';
+    var a = app(id), state = onHome(id) ? badge(true) + '<span>Trên Home</span>' : '';
     return '<span class="panel-content">' + appMark(a, 120, 72, 58) + '<span class="label">' + esc(a.name) + '</span></span><span class="state">' + state + '</span>';
   }
   var FILLS = {
     apps: function (t, el) {
       var f = t.f, items = appsItems(), n = items.length, rows = Math.ceil(n / COLS), vis = 3, row = Math.floor(f.i / COLS);
-      setHTML(el.title, 'All apps');
-      setHTML(el.sub, esc(catalog.loading ? 'Loading installed apps…' : catalog.error || (!n ? 'No installed apps found.' : '')));
+      setHTML(el.title, 'Tất cả ứng dụng');
+      setHTML(el.sub, esc(catalog.loading ? 'Đang tải danh sách ứng dụng…' : catalog.error || (!n ? 'Không tìm thấy ứng dụng nào.' : '')));
       setHTML(el.head, headButtons(appsHead(), f.zone === 'head' ? 0 : -1, 'apps'));
       el.head.className = 's-head' + (f.zone === 'head' ? ' is-awake' : '');
       if (f.zone === 'grid') { if (row < t.top) t.top = row; if (row > t.top + vis - 1) t.top = row - vis + 1; }
@@ -1551,11 +1630,11 @@
     editor: function (t, el) {
       var f = t.f, H = t.lifted ? t.lifted.order : S.c.home, O = otherGroups(), list = O.recent.concat(O.rest), full = S.c.home.length >= CAP;
       var entries = [], ys = [], y = 0, yf, minTop, maxTop = 0, rowEnd, before = false, afterRows = false;
-      var hint = catalog.error ? catalog.error : catalog.loading ? 'Loading installed apps…' : f.zone === 'head' && f.h === 0 ? undoCaption() : f.zone === 'home' && f.part === 'remove' ? (H.length <= 1 ? LAST : app(H[f.i]).name + ' stays installed.') : '';
-      setHTML(el.sub, editStatus(hint, t.lifted ? 'Moving ' + app(t.lifted.id).name + '. OK places it, Back puts it back.' : ''));
-      setHTML(el.head, headButtons([['undo', 'Undo', S.undo.length ? '' : 'is-idle', 'undo'], ['done', 'Done', '', 'check']], f.zone === 'head' ? f.h : -1, 'editor'));
+      var hint = catalog.error ? catalog.error : catalog.loading ? 'Đang tải danh sách ứng dụng…' : f.zone === 'head' && f.h === 0 ? undoCaption() : f.zone === 'home' && f.part === 'remove' ? (H.length <= 1 ? LAST : app(H[f.i]).name + ' vẫn được lưu trên TV.') : '';
+      setHTML(el.sub, editStatus(hint, t.lifted ? 'Đang di chuyển ' + app(t.lifted.id).name + '. Nhấn OK để đặt, Back để hủy.' : ''));
+      setHTML(el.head, headButtons([['undo', 'Hoàn tác', S.undo.length ? '' : 'is-idle', 'undo'], ['done', 'Xong', '', 'check']], f.zone === 'head' ? f.h : -1, 'editor'));
       el.head.className = 's-head' + (f.zone === 'head' ? ' is-awake' : '');
-      setHTML(el.lh, 'On Home <span class="s-count">' + S.c.home.length + ' of ' + CAP + '</span>');
+      setHTML(el.lh, 'Trên Home <span class="s-count">' + S.c.home.length + ' / ' + CAP + '</span>');
       el['break'].className = 'ed-order-break' + (H.length > editorCut() ? ' is-on' : '');
       el['break'].style.top = (264 + editorCut() * ED_ROW) + 'px';
 
@@ -1885,4 +1964,5 @@
   initialise();
   setLook({}, { transient: true, startup: true });
   norm(); render(); fit(); focusStage(); updateClock(); syncRotation();
+  setTimeout(refreshCatalog, 100);
 })();

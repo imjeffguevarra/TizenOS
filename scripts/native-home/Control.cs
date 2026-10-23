@@ -32,7 +32,9 @@ class Control {
  static int Main(string[] args){
   try{
    if(IntPtr.Size!=4||getuid()!=901)throw new Exception("Expected 32-bit SDK user, no root");
-   var info=File.ReadAllText("/etc/prd_info.ini");if(!info.Contains("Version=T-PTMDUABC-0090-2130.0;"))throw new Exception("Unexpected firmware");
+   var info=File.ReadAllText("/etc/prd_info.ini");
+   bool fwOk=info.Contains("Version=T-PTMDUABC-0090-2130.0;")||info.Contains("Version=T-RSLFUABC-0090-1300.9;")||(args.Length>0&&args[args.Length-1]=="--force-firmware");
+   if(!fwOk)throw new Exception("Unexpected firmware; verified compatible versions: T-PTMDUABC-0090-2130.0, T-RSLFUABC-0090-1300.9");
    if(args.Length==1&&args[0]=="query"){Console.WriteLine("CLEANFRAME_HOME_JSON="+JsonSerializer.Serialize(Query()));return 0;}
    if(args.Length!=2||(args[0]!="apply"&&args[0]!="restore"))throw new Exception("Use query, apply SNAPSHOT, or restore SNAPSHOT");
    var original=JsonSerializer.Deserialize<Snapshot>(File.ReadAllText(args[1]));CheckSnapshot(original);var before=Query();

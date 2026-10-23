@@ -2,6 +2,8 @@
 /.local/
 /dist/
 /node_modules/
+scripts/native-home/obj/
+scripts/native-home/bin/
 .DS_Store
 __pycache__/
 *.pyc

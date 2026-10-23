@@ -16,5 +16,65 @@
     "source": "https://github.com/simple-icons/simple-icons/blob/develop/icons/tubi.svg",
     "licence": "CC0-1.0",
     "note": "Shape unchanged; white fill for launcher."
+  },
+  {
+    "icon": "emby",
+    "source": "https://github.com/simple-icons/simple-icons/blob/develop/icons/emby.svg",
+    "licence": "CC0-1.0",
+    "note": "Geometric glyph adaptation; white fill for launcher."
+  },
+  {
+    "icon": "plex",
+    "source": "https://github.com/simple-icons/simple-icons/blob/develop/icons/plex.svg",
+    "licence": "CC0-1.0",
+    "note": "Chevron brand mark; white fill for launcher."
+  },
+  {
+    "icon": "xbox",
+    "source": "https://github.com/simple-icons/simple-icons/blob/develop/icons/xbox.svg",
+    "licence": "CC0-1.0",
+    "note": "Sphere cross mark; white fill for launcher."
+  },
+  {
+    "icon": "moonlight",
+    "source": "Original CleanFrame line drawings",
+    "licence": "MIT",
+    "note": "Minimalist moon and play badge for Moonlight game streaming."
+  },
+  {
+    "icon": "tizenbrew",
+    "source": "Original CleanFrame line drawings",
+    "licence": "MIT",
+    "note": "Minimalist coffee/mug icon for TizenBrew platform."
+  },
+  {
+    "icon": "nuvio_legacy",
+    "source": "Original CleanFrame line drawings",
+    "licence": "MIT",
+    "note": "Minimalist polygon emblem for Nuvio Native C/GLES2 application."
+  },
+  {
+    "icon": "nuviotv",
+    "source": "Original CleanFrame line drawings",
+    "licence": "MIT",
+    "note": "Minimalist geometric emblem for Nuvio Web application."
+  },
+  {
+    "icon": "vtv",
+    "source": "Original CleanFrame line drawings",
+    "licence": "MIT",
+    "note": "Clean TV screen glyph for national broadcaster OTT."
+  },
+  {
+    "icon": "vieon",
+    "source": "Original CleanFrame line drawings",
+    "licence": "MIT",
+    "note": "Clean play badge for OTT streaming service."
+  },
+  {
+    "icon": "hdmi",
+    "source": "Original CleanFrame line drawings",
+    "licence": "MIT",
+    "note": "Minimalist HDMI port outline for TV input switching."
   }
 ]

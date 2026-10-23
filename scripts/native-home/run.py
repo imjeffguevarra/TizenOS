@@ -3,17 +3,36 @@ import sys, base64, ipaddress, json, os, socket, subprocess, time, uuid, urllib.
 r=Path(__file__).resolve().parents[2]; d=r/'.local/native-home'
 mode=sys.argv[1] if len(sys.argv)>1 else 'query'
 if mode not in ['query','apply','restore','inspect']:raise SystemExit('Unknown action')
-host=json.loads((r/'.local/device.json').read_text())['host'];ipaddress.ip_address(host)
+device_cfg = json.loads((r/'.local/device.json').read_text())
+host = device_cfg['host']; ipaddress.ip_address(host)
 with urllib.request.urlopen('http://'+host+':8001/api/v2/',timeout=4) as response: info=json.load(response)
-if info.get('device',{}).get('modelName')!='QA55LS03DAWXXY':raise SystemExit('Model guard failed; nothing staged.')
-sdb=str(r/'.local/tizen-sdk/tools/sdb');serial=host+':26101'
+
+allowed_models = {'QA55LS03DAWXXY', 'QA65Q8FAAKXXV'}
+if 'modelName' in device_cfg: allowed_models.add(device_cfg['modelName'])
+current_model = info.get('device', {}).get('modelName', '')
+if current_model not in allowed_models and '--force' not in sys.argv:
+    raise SystemExit(f'Model guard failed: {current_model} not in allowed models ({allowed_models}); use --force to override.')
+
+import shutil
+sdb_candidate = shutil.which('sdb') or os.environ.get('SDB_PATH')
+if not sdb_candidate:
+    for fallback in [
+        Path.home() / 'tizen-studio/tools/sdb',
+        r / '.local/tizen-sdk/tools/sdb',
+        Path('/opt/tizen-studio/tools/sdb')
+    ]:
+        if fallback.is_file():
+            sdb_candidate = str(fallback)
+            break
+sdb = str(sdb_candidate or 'sdb'); serial=host+':26101'
 def run(args,timeout=12):
  p=subprocess.run([sdb,*args],capture_output=True,text=True,timeout=timeout)
  if p.returncode:raise RuntimeError('SDB transport failed: '+p.stdout[-300:]+p.stderr[-300:])
  return p
 run(['connect',serial])
 # Re-stage reviewed helper files on each run so rollback survives SDK temporary-file cleanup.
-for suffix in ['dll','runtimeconfig.json','deps.json']:
+if mode != 'inspect':
+ for suffix in ['dll','runtimeconfig.json','deps.json']:
     source=d/'out'/('CleanFrameHomeControl.'+suffix)
     run(['-s',serial,'push',str(source),'/home/owner/share/tmp/sdk_tools/CleanFrameHomeControl.'+suffix])
 if mode in ['apply','restore']:
